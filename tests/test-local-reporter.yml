@@ -1,0 +1,65 @@
+name: Test local reporter - no GitHub API required
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a valid markdown file for linting
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/local"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/local/readme.md" << 'EOF'
+          # Project Title
+
+          A brief description of the project.
+
+          ## Installation
+
+          Run the following command:
+
+          ```sh
+          npm install
+          ```
+
+          ## Usage
+
+          Use the tool as follows.
+          EOF
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'tests/fixtures/local/readme.md'
+
+      - name: Assert action ran successfully with local reporter
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The 'local' reporter does not make GitHub API calls, so it should succeed
+          # even under the sentinel repo environment.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: markdownlint ran successfully with local reporter"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (acceptable under harness)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

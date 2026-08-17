@@ -1,18 +1,77 @@
-# reviewdog/action-markdownlint
+# GitHub Action: Run markdownlint with reviewdog
 
-🐶 Run markdownlint with reviewdog on pull requests to improve code review experience.
+Based on [reviewdog/action-shellcheck](https://github.com/reviewdog/action-shellcheck)
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/reviewdog/action-markdownlint](https://github.com/reviewdog/action-markdownlint).
+[![Docker Image CI](https://github.com/prologic/action-markdownlint/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/prologic/action-markdownlint/actions)
+[![Release](https://img.shields.io/github/release/prologic/action-markdownlint.svg?maxAge=43200)](https://github.com/prologic/action-markdownlint/releases)
 
-## Versions
+This action runs [markdownlint](https://github.com/DavidAnson/markdownlint) with
+[reviewdog](https://github.com/reviewdog/reviewdog) on pull requests to improve
+code review experience.
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v0.25.0 | [`v0.25.0`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.25.0) | [`28fb422`](https://github.com/reviewdog/action-markdownlint/commit/28fb4224271253fedd5079b61de820d6228041fd) |
-| v0.26.0 | [`v0.26.0`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.26.0) | [`f901468`](https://github.com/reviewdog/action-markdownlint/commit/f901468edf9a3634dd39b35ba26cad0aad1a0bfd) |
-| v0.26.1 | [`v0.26.1`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.26.1) | [`2954be4`](https://github.com/reviewdog/action-markdownlint/commit/2954be4ffbcecedf5ec59d2ce6ef6099d2c9b4a8) |
-| v0.26.2 | [`v0.26.2`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.26.2) | [`3667398`](https://github.com/reviewdog/action-markdownlint/commit/3667398db9118d7e78f7a63d10e26ce454ba5f58) |
-| v0.27.0 | [`v0.27.0`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.27.0) | [`844fd04`](https://github.com/reviewdog/action-markdownlint/commit/844fd04b127b0d78328653f182d32988ad41d3d7) |
+## Inputs
+
+<!-- markdownlint-disable MD013 -->
+```yml
+inputs:
+  github_token:
+    description: 'GITHUB_TOKEN.'
+    default: '${{ github.token }}'
+  ### Flags for reviewdog ###
+  level:
+    description: 'Report level for reviewdog [info,warning,error]'
+    default: 'error'
+  reporter:
+    description: 'Reporter of reviewdog command [github-check,github-pr-review].'
+    default: 'github-check'
+  filter_mode:
+    description: |
+      Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
+      Default is added.
+    default: 'added'
+  fail_level:
+    description: |
+      If set to `none`, always use exit code 0 for reviewdog.
+      Otherwise, exit code 1 for reviewdog if it finds at least 1 issue with severity greater than or equal to the given level.
+      Possible values: [none,any,info,warning,error]
+      Default is `none`.
+    default: 'none'
+  fail_on_error:
+    description: |
+      Deprecated, use `fail_level` instead.
+      Exit code for reviewdog when errors are found [true,false]
+      Default is `false`.
+    deprecationMessage: Deprecated, use `fail_level` instead.
+    default: 'false'
+  reviewdog_flags:
+    description: 'Additional reviewdog flags'
+    default: ''
+  ### Flags for markdownlint-cli ###
+  markdownlint_flags:
+    description: "Options of markdownlint-cli command. Default: '.'"
+    default: '.'
+```
+<!-- markdownlint-enable MD013 -->
+
+## Example usage
+
+### [.github/workflows/reviewdog.yml](.github/workflows/reviewdog.yml)
+
+```yml
+name: reviewdog
+on: [pull_request]
+jobs:
+  markdownlint:
+    name: runner / markdownlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: markdownlint
+        uses: reviewdog/action-markdownlint@3667398db9118d7e78f7a63d10e26ce454ba5f58 # v0.26.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+```
 
 ## Privacy
 

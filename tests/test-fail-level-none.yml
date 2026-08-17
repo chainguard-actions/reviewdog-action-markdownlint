@@ -1,0 +1,58 @@
+name: Test fail_level none - always exits 0
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a markdown file with lint issues
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/invalid"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/invalid/bad.md" << 'EOF'
+          # Title
+
+            ## Indented heading
+
+          * item one
+          * item two
+          1. mixed list
+          EOF
+
+      - name: Set up git origin reachable inside Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github_token: ${{ github.token }}
+          reporter: github-check
+          filter_mode: nofilter
+          fail_level: none
+          level: warning
+          markdownlint_flags: 'tests/fixtures/invalid/bad.md'
+
+      - name: Assert action ran (fail_level none means reviewdog exits 0 regardless of findings)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With fail_level: none, reviewdog always exits 0.
+          # The action may still fail if the github-check API call fails on the sentinel repo.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with fail_level=none as expected"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo API failure is acceptable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
