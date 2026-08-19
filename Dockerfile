@@ -13,7 +13,7 @@ RUN apt-get update \
         wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-RUN wget -O /tmp/install-reviewdog.sh -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+RUN wget -O /tmp/install-reviewdog.sh -q https://raw.githubusercontent.com/reviewdog/reviewdog/${REVIEWDOG_VERSION}/install.sh \
     && sh /tmp/install-reviewdog.sh -b /usr/local/bin/ ${REVIEWDOG_VERSION} \
     && rm /tmp/install-reviewdog.sh
 
