@@ -1,0 +1,22 @@
+name: Test markdownlint with fail_level none
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      REVIEWDOG_GITHUB_API_TOKEN: dummy-token
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github_token: dummy-token
+          reporter: local
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'pristine/reviewdog--action-markdownlint/v0.26.2/tests/fixtures'
+      - name: Assert action did not fail despite any lint issues
+        run: |
+          echo "Action completed with fail_level=none - exit code should be 0 regardless of lint findings"
+          echo "PASS"

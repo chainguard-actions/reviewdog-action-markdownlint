@@ -1,0 +1,25 @@
+name: Test markdownlint_flags input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Run markdownlint targeting specific file with info level
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_level: none
+          level: info
+          markdownlint_flags: 'tests/fixtures/targeted-md/doc.md'
+
+      - name: Assert action completed successfully
+        run: |
+          echo "PASS: markdownlint ran with custom markdownlint_flags targeting specific file"

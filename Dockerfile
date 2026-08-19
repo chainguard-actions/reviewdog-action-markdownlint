@@ -13,9 +13,8 @@ RUN apt-get update \
         wget \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-RUN wget -O /tmp/reviewdog-install.sh -q https://raw.githubusercontent.com/reviewdog/reviewdog/fd59714416d6d9a1c0692d872e38e7f8448df4fc/install.sh \
-    && sh /tmp/reviewdog-install.sh -b /usr/local/bin/ ${REVIEWDOG_VERSION} \
-    && rm /tmp/reviewdog-install.sh
+RUN wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/fd59714416d6d9a1c0692d872e38e7f8448df4fc/install.sh \
+    | sh -s -- -b /usr/local/bin/ ${REVIEWDOG_VERSION}
 
 COPY entrypoint.sh /entrypoint.sh
 
