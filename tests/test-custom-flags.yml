@@ -4,22 +4,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Run markdownlint with custom flags and warning level
+
+      - name: Run markdownlint with custom flags targeting specific file
         id: action
         uses: .
         with:
-          github_token: dummy-token
+          github_token: ${{ github.token }}
           reporter: local
           filter_mode: nofilter
+          fail_level: error
           level: warning
-          fail_level: none
-          markdownlint_flags: >-
-            --disable MD013 -- ${{ github.workspace }}/pristine/reviewdog--action-markdownlint/v0.27.0/tests/fixtures/valid.md
-      - name: Assert action succeeded with custom flags
+          markdownlint_flags: 'tests/fixtures/custom/good.md'
+
+      - name: Assert action completed with custom flags
         run: |
-          echo "PASS: markdownlint ran successfully with custom flags (MD013 disabled, warning level)"
+          echo "PASS: markdownlint ran successfully with custom flags targeting specific file"

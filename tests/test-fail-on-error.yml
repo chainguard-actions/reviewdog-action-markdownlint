@@ -1,4 +1,4 @@
-name: Test basic usage - clean markdown
+name: Test fail_on_error flag (deprecated)
 on:
   workflow_dispatch:
 jobs:
@@ -7,16 +7,16 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run markdownlint on clean fixture file
+      - name: Run markdownlint with fail_on_error=false on clean file
         id: action
         uses: .
         with:
           github_token: ${{ github.token }}
           reporter: local
           filter_mode: nofilter
-          fail_level: error
+          fail_on_error: 'false'
           markdownlint_flags: 'tests/fixtures/clean'
 
-      - name: Assert action completed successfully
+      - name: Assert action completed successfully with fail_on_error=false
         run: |
-          echo "PASS: markdownlint ran successfully on clean markdown"
+          echo "PASS: markdownlint ran successfully with fail_on_error=false on clean markdown"
