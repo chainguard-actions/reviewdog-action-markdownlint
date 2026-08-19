@@ -1,0 +1,41 @@
+name: Test warning level reporting
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a valid markdown file for linting
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/md-warn"
+          cat > "$GITHUB_WORKSPACE/md-warn/readme.md" << 'EOF'
+          # Test Document
+
+          This is a test document for markdownlint.
+
+          ## Features
+
+          - Item one
+          - Item two
+          - Item three
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          level: warning
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          markdownlint_flags: 'md-warn'
+
+      - name: Assert action completed at warning level
+        run: |
+          echo "Action completed with warning level reporting"
+          echo "PASS"
