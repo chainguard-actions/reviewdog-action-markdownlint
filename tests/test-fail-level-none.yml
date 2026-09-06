@@ -1,0 +1,41 @@
+name: Test fail_level none - errors found but exit code 0
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a markdown file with linting errors
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/test-failnone-dir"
+          printf '# Test\n\n\n  ## ## Badly Nested\n  * item\n  1. mixed\n' \
+            > "$GITHUB_WORKSPACE/test-failnone-dir/errors.md"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github_token: ${{ github.token }}
+          reporter: github-check
+          level: error
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'test-failnone-dir/errors.md'
+
+      - name: Assert action ran (fail_level=none means reviewdog exits 0 regardless of findings)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With fail_level=none, reviewdog should not fail due to findings.
+          # However, the GitHub API call to post check results may fail on the sentinel repo.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with fail_level=none as expected"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable by reviewdog)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

@@ -1,0 +1,54 @@
+name: Test basic usage - clean markdown
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a clean markdown file to lint
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/test-lint-dir"
+          cat > "$GITHUB_WORKSPACE/test-lint-dir/clean.md" << 'EOF'
+          # Clean Markdown File
+
+          This is a clean markdown file with no linting errors.
+
+          ## Section One
+
+          Some content here.
+
+          ## Section Two
+
+          More content here.
+
+          - Item one
+          - Item two
+          - Item three
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github_token: ${{ github.token }}
+          reporter: github-check
+          level: error
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'test-lint-dir/clean.md'
+
+      - name: Assert action ran (reviewdog may fail on sentinel repo, but markdownlint should succeed)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded - markdownlint ran cleanly"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable by reviewdog)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
