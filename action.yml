@@ -1,0 +1,46 @@
+name: 'Run markdownlint with reviewdog'
+description: '🐶 Run markdownlint with reviewdog on pull requests to improve code review experience.'
+author: 'prologic'
+inputs:
+  github_token:
+    description: 'GITHUB_TOKEN.'
+    default: '${{ github.token }}'
+  ### Flags for reviewdog ###
+  level:
+    description: 'Report level for reviewdog [info,warning,error]'
+    default: 'error'
+  reporter:
+    description: 'Reporter of reviewdog command [github-check,github-pr-review].'
+    default: 'github-check'
+  filter_mode:
+    description: |
+      Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
+      Default is added.
+    default: 'added'
+  fail_level:
+    description: |
+      If set to `none`, always use exit code 0 for reviewdog.
+      Otherwise, exit code 1 for reviewdog if it finds at least 1 issue with severity greater than or equal to the given level.
+      Possible values: [none,any,info,warning,error]
+      Default is `none`.
+    default: 'none'
+  fail_on_error:
+    description: |
+      Deprecated, use `fail_level` instead.
+      Exit code for reviewdog when errors are found [true,false]
+      Default is `false`.
+    deprecationMessage: Deprecated, use `fail_level` instead.
+    default: 'false'
+  reviewdog_flags:
+    description: 'Additional reviewdog flags'
+    default: ''
+  ### Flags for markdownlint-cli ###
+  markdownlint_flags:
+    description: "Options of markdownlint-cli command. Default: '.'"
+    default: '.'
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/reviewdog/action-markdownlint:v0.29.1@sha256:8c177204fded70274328eb0ef3c5cac0a781cba246ff65e2dbfbb653ae405e01'
+branding:
+  icon: 'zoom-in'
+  color: 'purple'

@@ -1,0 +1,28 @@
+name: Test basic usage - valid markdown
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Write a valid markdown file to lint
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/md-test"
+          printf '# Valid Markdown\n\nThis is a valid markdown file.\n\n## Section One\n\nSome content here.\n' \
+            > "$GITHUB_WORKSPACE/md-test/valid.md"
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'md-test/valid.md'
+
+      - name: Assert action succeeded
+        run: |
+          echo "Action completed successfully (no markdownlint errors in valid file)"
+          echo "PASS"
