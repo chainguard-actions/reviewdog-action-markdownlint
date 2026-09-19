@@ -1,0 +1,62 @@
+name: Test custom markdownlint flags
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up git origin reachable inside the Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git push "$GITHUB_WORKSPACE/.git-remote" --tags
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - name: Create markdown file and custom config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/custom"
+          # Create a markdown file that would normally fail MD041 (first line not heading)
+          # but we'll disable that rule via config
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/custom/doc.md" << 'EOF'
+          # Valid Document
+
+          This document has proper structure.
+
+          ## Section One
+
+          Content for section one.
+
+          ## Section Two
+
+          Content for section two.
+          EOF
+          # Create a markdownlint config that disables some rules
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/custom/.markdownlint.json" << 'EOF'
+          {
+            "default": true,
+            "MD013": false,
+            "MD033": false
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: '--config tests/fixtures/custom/.markdownlint.json tests/fixtures/custom'
+
+      - name: Assert action completed with custom flags
+        run: |
+          echo "Action completed with custom markdownlint flags"
+          echo "PASS"
