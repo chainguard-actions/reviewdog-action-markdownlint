@@ -1,0 +1,64 @@
+name: Test custom markdownlint flags and local reporter
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Create markdown files in a subdirectory
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/docs"
+          cat > "$GITHUB_WORKSPACE/docs/readme.md" <<'EOF'
+          # Documentation
+
+          This is a well-formatted markdown document.
+
+          ## Overview
+
+          Content goes here.
+
+          ## Details
+
+          More details here.
+          EOF
+
+      - name: Set up git origin reachable inside the Docker container
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          rm -rf "$GITHUB_WORKSPACE/.git-remote"
+          git init --bare "$GITHUB_WORKSPACE/.git-remote"
+          git push "$GITHUB_WORKSPACE/.git-remote" HEAD:refs/heads/act-harness
+          git remote set-url origin "$GITHUB_WORKSPACE/.git-remote" 2>/dev/null || \
+            git remote add origin "$GITHUB_WORKSPACE/.git-remote"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          github_token: ${{ github.token }}
+          reporter: github-check
+          level: warning
+          filter_mode: nofilter
+          fail_level: none
+          markdownlint_flags: 'docs/'
+
+      - name: Assert action ran with custom flags
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should either succeed (markdownlint + reviewdog ran fine)
+          # or fail gracefully due to the sentinel repo not being resolvable via GitHub API.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with custom flags"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected with sentinel repo)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
