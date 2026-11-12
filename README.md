@@ -32,6 +32,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v0.31.7 | [`v0.31.7`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.31.7) | [`0f00f98`](https://github.com/reviewdog/action-markdownlint/commit/0f00f9816d25b024975712a1ad4ea03dbf5848a6) | [`HARDENING.md`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/blob/v0.31.7/HARDENING.md) |
 | v0.32.0 | [`v0.32.0`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.32.0) | [`f8e8c50`](https://github.com/reviewdog/action-markdownlint/commit/f8e8c509d6e706db79bb39c1c506c968f1a66b82) | [`HARDENING.md`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/blob/v0.32.0/HARDENING.md) |
 | v0.33.0 | [`v0.33.0`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.33.0) | [`55f2ecf`](https://github.com/reviewdog/action-markdownlint/commit/55f2ecf4c813c1cfac36953c1c40a46ec5c28f70) | [`HARDENING.md`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/blob/v0.33.0/HARDENING.md) |
+| v0.33.1 | [`v0.33.1`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/tree/v0.33.1) | [`584c3e8`](https://github.com/reviewdog/action-markdownlint/commit/584c3e89347d0b16ede47c73ae199550a02b1b37) | [`HARDENING.md`](https://github.com/chainguard-actions/reviewdog-action-markdownlint/blob/v0.33.1/HARDENING.md) |
 
 ## Privacy
 
